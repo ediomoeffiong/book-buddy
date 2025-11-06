@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: book-buddy
+  
+  datasource:
+    url: jdbc:h2:mem:bookbuddydb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:bookbuddysecretkeythatisverylongandcomplex1234567890}
+  expiration: 86400000 # 24 hours in milliseconds
+
+# Application Configuration
+app:
+  maintenance:
+    enabled: ${MAINTENANCE_MODE:false}
+    message: "The system is currently under maintenance. Please try again later."
+
+# External API Configuration
+external:
+  api:
+    google-books:
+      base-url: https://www.googleapis.com/books/v1
+      api-key: ${GOOGLE_BOOKS_API_KEY:}
+    open-library:
+      base-url: https://openlibrary.org
+
+# Logging
+logging:
+  level:
+    com.bookbuddy: DEBUG
+    org.springframework.security: DEBUG
+
