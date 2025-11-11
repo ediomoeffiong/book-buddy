@@ -872,5 +872,5 @@ For issues, questions, or contributions, please refer to the project repository 
 
 ---
 
-*Last Updated: January 2024*
+*Last Updated: 6th of November 2025*
 
