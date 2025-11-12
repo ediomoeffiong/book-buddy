@@ -41,9 +41,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
-                                "/api/auth/**",
+                                "/favicon.ico",
+                                "/**/*.ico",
+                                "/**/*.css",
+                                "/**/*.js",
+                                "/**/*.png",
+                                "/**/*.jpg",
+                                "/**/*.jpeg",
+                                "/**/*.gif",
+                                "/**/*.svg",
                                 "/static/**",
-                                "/static/favicon.ico",
+                                "/api/auth/**",
                                 "/h2-console/**",
                                 "/api/books/search/external/**").permitAll()
                         .anyRequest().authenticated()

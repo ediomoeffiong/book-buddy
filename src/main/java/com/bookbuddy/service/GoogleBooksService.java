@@ -89,6 +89,15 @@ public class GoogleBooksService {
     private BookDTO convertToBookDTO(GoogleBookItem item) {
         VolumeInfo info = item.getVolumeInfo();
         
+        if (info == null) {
+            log.warn("VolumeInfo is null for item: {}", item.getId());
+            return null;
+        }
+        
+        String title = info.getTitle() != null && !info.getTitle().isBlank() 
+                ? info.getTitle() 
+                : "Untitled";
+        
         String isbn = null;
         if (info.getIndustryIdentifiers() != null) {
             isbn = info.getIndustryIdentifiers().stream()
@@ -110,7 +119,7 @@ public class GoogleBooksService {
         }
         
         return BookDTO.builder()
-                .title(info.getTitle())
+                .title(title)
                 .author(author)
                 .isbn(isbn)
                 .description(info.getDescription())

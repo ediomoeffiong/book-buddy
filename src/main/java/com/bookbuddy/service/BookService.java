@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,10 @@ public class BookService {
     public BookDTO getBookById(Long id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found with id: " + id));
+        return convertToDTO(book);
+    }
+    
+    public BookDTO mapToDTO(Book book) {
         return convertToDTO(book);
     }
     
@@ -92,6 +97,7 @@ public class BookService {
     }
     
     private BookDTO convertToDTO(Book book) {
+        List<String> categories = sanitizeCategories(book.getCategories());
         return BookDTO.builder()
                 .id(book.getId())
                 .title(book.getTitle())
@@ -102,32 +108,45 @@ public class BookService {
                 .publishedDate(book.getPublishedDate())
                 .pageCount(book.getPageCount())
                 .coverImageUrl(book.getCoverImageUrl())
-                .categories(book.getCategories())
+                .categories(categories)
                 .language(book.getLanguage())
                 .googleBooksId(book.getGoogleBooksId())
                 .openLibraryId(book.getOpenLibraryId())
-                .averageRating(book.getAverageRating())
-                .ratingsCount(book.getRatingsCount())
+                .averageRating(book.getAverageRating() != null ? book.getAverageRating() : 0.0)
+                .ratingsCount(book.getRatingsCount() != null ? book.getRatingsCount() : 0)
                 .build();
     }
     
     private Book convertToEntity(BookDTO dto) {
-        return Book.builder()
-                .title(dto.getTitle())
-                .author(dto.getAuthor())
+        // Ensure required fields are not null
+        String title = dto.getTitle() != null && !dto.getTitle().isBlank() 
+                ? dto.getTitle() 
+                : "Untitled";
+        String author = dto.getAuthor() != null && !dto.getAuthor().isBlank() 
+                ? dto.getAuthor() 
+                : "Unknown Author";
+        
+        Book.BookBuilder builder = Book.builder()
+                .title(title)
+                .author(author)
                 .isbn(dto.getIsbn())
                 .description(dto.getDescription())
                 .publisher(dto.getPublisher())
                 .publishedDate(dto.getPublishedDate())
                 .pageCount(dto.getPageCount())
                 .coverImageUrl(dto.getCoverImageUrl())
-                .categories(dto.getCategories())
+                .categories(sanitizeCategories(dto.getCategories()))
                 .language(dto.getLanguage())
                 .googleBooksId(dto.getGoogleBooksId())
                 .openLibraryId(dto.getOpenLibraryId())
                 .averageRating(dto.getAverageRating() != null ? dto.getAverageRating() : 0.0)
-                .ratingsCount(dto.getRatingsCount() != null ? dto.getRatingsCount() : 0)
-                .build();
+                .ratingsCount(dto.getRatingsCount() != null ? dto.getRatingsCount() : 0);
+        
+        if (dto.getId() != null) {
+            builder.id(dto.getId());
+        }
+        
+        return builder.build();
     }
     
     private void updateBookFromDTO(Book book, BookDTO dto) {
@@ -139,8 +158,26 @@ public class BookService {
         book.setPublishedDate(dto.getPublishedDate());
         book.setPageCount(dto.getPageCount());
         book.setCoverImageUrl(dto.getCoverImageUrl());
-        book.setCategories(dto.getCategories());
+        book.setCategories(sanitizeCategories(dto.getCategories()));
         book.setLanguage(dto.getLanguage());
+        book.setGoogleBooksId(dto.getGoogleBooksId());
+        book.setOpenLibraryId(dto.getOpenLibraryId());
+        if (dto.getAverageRating() != null) {
+            book.setAverageRating(dto.getAverageRating());
+        }
+        if (dto.getRatingsCount() != null) {
+            book.setRatingsCount(dto.getRatingsCount());
+        }
+    }
+    
+    private List<String> sanitizeCategories(List<String> categories) {
+        if (categories == null) {
+            return new ArrayList<>();
+        }
+        return categories.stream()
+                .filter(category -> category != null && !category.isBlank())
+                .map(String::trim)
+                .collect(Collectors.toList());
     }
 }
 

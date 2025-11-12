@@ -19,9 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -34,6 +31,8 @@ public class ReviewService {
     private final BookService bookService;
     
     public ReviewDTO createReview(Long userId, Long bookId, String content, Integer rating) {
+        validateReview(content, rating);
+        
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
@@ -61,6 +60,8 @@ public class ReviewService {
     }
     
     public ReviewDTO updateReview(Long reviewId, Long userId, String content, Integer rating) {
+        validateReview(content, rating);
+        
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
         
@@ -135,7 +136,7 @@ public class ReviewService {
                 .profileImageUrl(review.getUser().getProfileImageUrl())
                 .build();
         
-        BookDTO bookDTO = bookService.getBookById(review.getBook().getId());
+        BookDTO bookDTO = bookService.mapToDTO(review.getBook());
         
         return ReviewDTO.builder()
                 .id(review.getId())
@@ -146,6 +147,15 @@ public class ReviewService {
                 .createdAt(review.getCreatedAt())
                 .updatedAt(review.getUpdatedAt())
                 .build();
+    }
+    
+    private void validateReview(String content, Integer rating) {
+        if (rating == null || rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5");
+        }
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("Review content cannot be empty");
+        }
     }
 }
 
