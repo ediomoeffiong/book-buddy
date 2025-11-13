@@ -28,7 +28,7 @@ FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 
 # Copy JAR from the build stage
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /target/*.jar app.jar
 
 # Expose Render port
 EXPOSE 8080
