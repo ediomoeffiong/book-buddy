@@ -80,4 +80,3 @@ public class Book {
     @Builder.Default
     private List<Favourite> favourites = new ArrayList<>();
 }
-

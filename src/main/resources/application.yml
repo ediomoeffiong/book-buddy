@@ -50,7 +50,8 @@ external:
   api:
     google-books:
       base-url: https://www.googleapis.com/books/v1
-      api-key: ${GOOGLE_BOOKS_API_KEY}
+      # api-key: ${GOOGLE_BOOKS_API_KEY}
+      api-key: AIzaSyDOTe2GcFf6lKo_478RXrCzZnW-enb8xGk
     open-library:
       base-url: https://openlibrary.org
 

@@ -53,7 +53,12 @@ public class SecurityConfig {
                                 "/static/**",
                                 "/api/auth/**",
                                 "/h2-console/**",
-                                "/api/books/search/external/**").permitAll()
+                                "/api/books/search/external/**",
+                                "/api/auth/**",
+                                "/auth/**",
+                                "/register",
+                                "/login",
+                                "/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
