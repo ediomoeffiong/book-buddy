@@ -1,10 +1,11 @@
 # Use lightweight Java 17 image
 FROM eclipse-temurin:17-jdk-alpine AS build
 
-# Set working directory inside the container
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml
+# Install bash and certificates for Maven
+RUN apk add --no-cache bash curl ca-certificates
+
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
@@ -12,7 +13,7 @@ COPY pom.xml .
 # Make mvnw executable
 RUN chmod +x mvnw
 
-# Download dependencies (for caching)
+# Download dependencies
 RUN ./mvnw dependency:go-offline -B
 
 # Copy source code
