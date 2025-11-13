@@ -3,9 +3,6 @@ FROM eclipse-temurin:17-jdk AS build
 
 WORKDIR /app
 
-# Install bash and certificates for Maven
-RUN apk add --no-cache bash curl ca-certificates
-
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
