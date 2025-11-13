@@ -1,4 +1,4 @@
-# Use Java 17
+# ----------- Build Stage -----------
 FROM eclipse-temurin:17-jdk AS build
 
 WORKDIR /app
@@ -27,7 +27,7 @@ COPY --from=build /app/target/*.jar app.jar
 # Expose Render port
 EXPOSE 8080
 
-# Use the PORT env var from Render
+# Use Render's PORT environment variable
 ENV PORT=8080
 
 # Start the app
