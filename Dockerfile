@@ -1,25 +1,28 @@
 # ----------- Build Stage -----------
-FROM maven:3.9.5-eclipse-temurin-17 AS build
+FROM eclipse-temurin:21-jdk AS build
 
 WORKDIR /app
+
+# Install Maven
+RUN apt-get update && \
+    apt-get install -y maven && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy pom.xml and source code
 COPY pom.xml .
 COPY src src
 
-# Build the app (skip tests)
+# Build the app
 RUN mvn clean package -DskipTests
 
 # ----------- Run Stage -----------
-FROM eclipse-temurin:17-jdk-alpine
+FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
-# Copy JAR from build stage
+# Copy JAR
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose Render port
 EXPOSE 8080
 ENV PORT=8080
 
-# Start the app
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
