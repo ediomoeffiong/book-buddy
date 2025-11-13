@@ -4,6 +4,10 @@ FROM eclipse-temurin:17-jdk-alpine AS build
 # Set working directory inside the container
 WORKDIR /app
 
+# After copying your JAR
+RUN adduser -D springuser
+USER springuser
+
 # Copy Maven wrapper and pom.xml
 COPY mvnw .
 COPY .mvn .mvn
