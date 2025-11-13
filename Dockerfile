@@ -1,17 +1,15 @@
-# Use lightweight Java 17 image
+# Use Java 17
 FROM eclipse-temurin:17-jdk AS build
 
 WORKDIR /app
 
+# Copy Maven wrapper and pom.xml
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
 
 # Make mvnw executable
 RUN chmod +x mvnw
-
-# Download dependencies
-RUN ./mvnw dependency:go-offline
 
 # Copy source code
 COPY src src
