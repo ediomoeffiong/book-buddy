@@ -1,5 +1,5 @@
 # Use lightweight Java 17 image
-FROM eclipse-temurin:17-jdk-alpine AS build
+FROM eclipse-temurin:17-jdk AS build
 
 WORKDIR /app
 
