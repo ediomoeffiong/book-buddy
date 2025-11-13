@@ -25,7 +25,7 @@ COPY src src
 
 # ----------- Run Stage -----------
 FROM eclipse-temurin:17-jdk-alpine
-WORKDIR /app
+WORKDIR /target
 
 # Copy JAR from the build stage
 COPY --from=build /target/*.jar app.jar
