@@ -14,7 +14,7 @@ RUN chmod +x mvnw
 
 # Download dependencies (for caching)
 # RUN ./mvnw dependency:go-offline -B
-RUN ./mvnw dependency:go-offline
+# RUN ./mvnw dependency:go-offline
 
 # Copy source code
 COPY src src
