@@ -14,12 +14,14 @@ RUN chmod +x mvnw
 
 # Download dependencies (for caching)
 # RUN ./mvnw dependency:go-offline -B
+RUN ./mvnw dependency:go-offline
 
 # Copy source code
 COPY src src
 
 # Build the app (skip tests for faster build)
-RUN ./mvnw clean package -DskipTests
+# RUN ./mvnw clean package -DskipTests
+RUN ./mvnw clean package
 
 # ----------- Run Stage -----------
 FROM eclipse-temurin:17-jdk-alpine
