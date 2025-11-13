@@ -1,33 +1,24 @@
 # ----------- Build Stage -----------
-FROM eclipse-temurin:17-jdk AS build
+FROM maven:3.9.5-eclipse-temurin-17 AS build
 
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml
-COPY mvnw .
-COPY .mvn .mvn
+# Copy pom.xml and source code
 COPY pom.xml .
-
-# Make mvnw executable
-RUN chmod +x mvnw
-
-# Copy source code
 COPY src src
 
-# Build the app (skip tests for faster build)
-RUN ./mvnw clean package -DskipTests
+# Build the app (skip tests)
+RUN mvn clean package -DskipTests
 
 # ----------- Run Stage -----------
 FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 
-# Copy JAR from the build stage
+# Copy JAR from build stage
 COPY --from=build /app/target/*.jar app.jar
 
 # Expose Render port
 EXPOSE 8080
-
-# Use Render's PORT environment variable
 ENV PORT=8080
 
 # Start the app
