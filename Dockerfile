@@ -13,22 +13,20 @@ COPY pom.xml .
 RUN chmod +x mvnw
 
 # Download dependencies (for caching)
-# RUN ./mvnw dependency:go-offline -B
-# RUN ./mvnw dependency:go-offline
+RUN ./mvnw dependency:go-offline -B
 
 # Copy source code
 COPY src src
 
 # Build the app (skip tests for faster build)
-# RUN ./mvnw clean package -DskipTests
-# RUN ./mvnw clean package
+RUN ./mvnw clean package -DskipTests
 
 # ----------- Run Stage -----------
 FROM eclipse-temurin:17-jdk-alpine
-WORKDIR /target
+WORKDIR /app
 
 # Copy JAR from the build stage
-COPY --from=build /target/*.jar app.jar
+COPY --from=build /app/target/*.jar app.jar
 
 # Expose Render port
 EXPOSE 8080
