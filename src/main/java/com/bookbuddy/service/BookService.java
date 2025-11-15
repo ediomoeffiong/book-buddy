@@ -95,6 +95,11 @@ public class BookService {
         return bookRepository.findByAuthorContainingIgnoreCase(author, pageable)
                 .map(this::convertToDTO);
     }
+
+    public Page<BookDTO> getAllBooks(Pageable pageable) {
+        return bookRepository.findAll(pageable)
+                .map(this::convertToDTO);
+    }
     
     private BookDTO convertToDTO(Book book) {
         List<String> categories = sanitizeCategories(book.getCategories());

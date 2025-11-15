@@ -18,6 +18,15 @@ public class BookController {
     
     private final BookService bookService;
     
+    @GetMapping
+    public ResponseEntity<Page<BookDTO>> getAllBooks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BookDTO> books = bookService.getAllBooks(pageable);
+        return ResponseEntity.ok(books);
+    }
+    
     @GetMapping("/{id}")
     public ResponseEntity<BookDTO> getBookById(@PathVariable Long id) {
         BookDTO book = bookService.getBookById(id);

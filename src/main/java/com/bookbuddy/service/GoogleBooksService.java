@@ -35,18 +35,24 @@ public class GoogleBooksService {
         try {
             WebClient webClient = webClientBuilder.baseUrl(baseUrl).build();
 
+            int cappedMax = Math.max(1, Math.min(maxResults, 40));
+
             GoogleBooksResponse response = webClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/volumes")
                             .queryParam("q", query)
-                            .queryParam("maxResults", maxResults)
+                            .queryParam("maxResults", cappedMax)
                             .queryParam("key", apiKey)
                             .build())
                     .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), clientResponse -> {
+                        log.warn("Google Books API returned status {} for query={}", clientResponse.statusCode(), query);
+                        return Mono.empty();
+                    })
                     .bodyToMono(GoogleBooksResponse.class)
                     .onErrorResume(e -> {
                         log.error("Error calling Google Books API: {}", e.getMessage());
-                        return Mono.just(new GoogleBooksResponse());
+                        return Mono.empty();
                     })
                     .block();
 
