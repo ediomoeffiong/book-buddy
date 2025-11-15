@@ -19,6 +19,16 @@ spring:
       enabled: true
       path: /h2-console
 
+jwt:
+  secret: MyVerySecureJwtSecretKeyThatIsAtLeast32BytesLongForHS256Algorithm
+  expiration: 86400000
+
+external:
+  api:
+    google-books:
+      base-url: https://www.googleapis.com/books/v1
+      api-key: YOUR_GOOGLE_BOOKS_API_KEY
+
 logging:
   level:
     com.bookbuddy: INFO
