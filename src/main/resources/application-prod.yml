@@ -1,18 +1,20 @@
 spring:
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/bookbuddy}
+    # Use DATABASE_URL from Render. No fallback to localhost in production.
+    url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:}
-  
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+
   jpa:
     hibernate:
-      ddl-auto: validate
+      # Auto-create/update tables if they don't exist
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-  
+
   h2:
     console:
       enabled: false
@@ -21,4 +23,3 @@ logging:
   level:
     com.bookbuddy: INFO
     org.springframework.security: WARN
-

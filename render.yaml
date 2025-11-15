@@ -1,13 +1,13 @@
-services:
-  - type: web
-    name: bookbuddy
-    env: docker
-    plan: free
-    autoDeploy: true
-    envVars:
-      - key: SPRING_PROFILES_ACTIVE
-        value: prod
-      - key: PORT
-        value: 8080
-      - key: GOOGLE_BOOKS_API_KEY
-        value: AIzaSyDOTe2GcFf6lKo_478RXrCzZnW-enb8xGk
+envVars:
+  - key: SPRING_PROFILES_ACTIVE
+    value: prod
+  - key: PORT
+    value: 8080
+  - key: GOOGLE_BOOKS_API_KEY
+    value: AIzaSyDOTe2GcFf6lKo_478RXrCzZnW-enb8xGk
+  - key: DATABASE_URL
+    value: jdbc:postgresql://<host>:<port>/<db_name>
+  - key: DATABASE_USERNAME
+    value: <your_db_username>
+  - key: DATABASE_PASSWORD
+    value: <your_db_password>
