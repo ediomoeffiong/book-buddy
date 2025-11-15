@@ -1,13 +1,37 @@
-envVars:
-  - key: SPRING_PROFILES_ACTIVE
-    value: prod
-  - key: PORT
-    value: 8080
-  - key: GOOGLE_BOOKS_API_KEY
-    value: AIzaSyDOTe2GcFf6lKo_478RXrCzZnW-enb8xGk
-  - key: DATABASE_URL
-    value: jdbc:postgresql://<host>:<port>/<db_name>
-  - key: DATABASE_USERNAME
-    value: <your_db_username>
-  - key: DATABASE_PASSWORD
-    value: <your_db_password>
+services:
+  - type: web
+    name: bookbuddy-backend
+    env: docker
+    plan: free
+
+    buildCommand: "./mvnw -DskipTests clean package"
+    startCommand: "java -jar target/bookbuddy-0.0.1-SNAPSHOT.jar"
+
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+
+      - key: PORT
+        value: 8080
+
+      - key: GOOGLE_BOOKS_API_KEY
+        value: AIzaSyDOTe2GcFf6lKo_478RXrCzZnW-enb8xGk
+
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bookbuddy-db
+          property: connectionString
+
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: bookbuddy-db
+          property: user
+
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: bookbuddy-db
+          property: password
+
+databases:
+  - name: bookbuddy-db
+    plan: free
