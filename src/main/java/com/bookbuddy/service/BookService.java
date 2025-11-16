@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional
 public class BookService {
+    private static final int MAX_DESCRIPTION_LENGTH = 2000;
     
     private final BookRepository bookRepository;
     private final GoogleBooksService googleBooksService;
@@ -61,6 +62,28 @@ public class BookService {
         book = bookRepository.save(book);
         
         return convertToDTO(book);
+    }
+
+    public List<BookDTO> saveTopFromExternalAPI(String query, int maxResults) {
+        List<BookDTO> external = googleBooksService.searchBooks(query, maxResults);
+        List<BookDTO> saved = new ArrayList<>();
+        for (BookDTO dto : external) {
+            if (dto == null) continue;
+            // If book already exists by googleBooksId, return existing
+            if (dto.getGoogleBooksId() != null) {
+                Book existing = bookRepository.findByGoogleBooksId(dto.getGoogleBooksId()).orElse(null);
+                if (existing != null) {
+                    saved.add(convertToDTO(existing));
+                    continue;
+                }
+            }
+
+            // convert and save
+            Book toSave = convertToEntity(dto);
+            toSave = bookRepository.save(toSave);
+            saved.add(convertToDTO(toSave));
+        }
+        return saved;
     }
     
     public BookDTO createOrUpdateBook(BookDTO bookDTO) {
@@ -131,23 +154,31 @@ public class BookService {
                 ? dto.getAuthor() 
                 : "Unknown Author";
         
+        String desc = dto.getDescription();
+        if (desc != null && desc.length() > MAX_DESCRIPTION_LENGTH) {
+            desc = desc.substring(0, MAX_DESCRIPTION_LENGTH);
+        }
+
         Book.BookBuilder builder = Book.builder()
-                .title(title)
-                .author(author)
-                .isbn(dto.getIsbn())
-                .description(dto.getDescription())
-                .publisher(dto.getPublisher())
-                .publishedDate(dto.getPublishedDate())
-                .pageCount(dto.getPageCount())
-                .coverImageUrl(dto.getCoverImageUrl())
-                .categories(sanitizeCategories(dto.getCategories()))
-                .language(dto.getLanguage())
-                .googleBooksId(dto.getGoogleBooksId())
-                .openLibraryId(dto.getOpenLibraryId())
-                .averageRating(dto.getAverageRating() != null ? dto.getAverageRating() : 0.0)
-                .ratingsCount(dto.getRatingsCount() != null ? dto.getRatingsCount() : 0);
+            .title(title)
+            .author(author)
+            .isbn(dto.getIsbn())
+            .description(desc)
+            .publisher(dto.getPublisher())
+            .publishedDate(dto.getPublishedDate())
+            .pageCount(dto.getPageCount())
+            .coverImageUrl(dto.getCoverImageUrl())
+            .categories(sanitizeCategories(dto.getCategories()))
+            .language(dto.getLanguage())
+            .googleBooksId(dto.getGoogleBooksId())
+            .openLibraryId(dto.getOpenLibraryId())
+            .averageRating(dto.getAverageRating() != null ? dto.getAverageRating() : 0.0)
+            .ratingsCount(dto.getRatingsCount() != null ? dto.getRatingsCount() : 0);
         
-        if (dto.getId() != null) {
+        // Only set the entity id when the DTO id is a positive value (persisted record).
+        // External temporary IDs are negative and should not be copied into the entity
+        // to avoid treating them as existing detached entities.
+        if (dto.getId() != null && dto.getId() > 0) {
             builder.id(dto.getId());
         }
         
@@ -158,7 +189,11 @@ public class BookService {
         book.setTitle(dto.getTitle());
         book.setAuthor(dto.getAuthor());
         book.setIsbn(dto.getIsbn());
-        book.setDescription(dto.getDescription());
+        String desc = dto.getDescription();
+        if (desc != null && desc.length() > MAX_DESCRIPTION_LENGTH) {
+            desc = desc.substring(0, MAX_DESCRIPTION_LENGTH);
+        }
+        book.setDescription(desc);
         book.setPublisher(dto.getPublisher());
         book.setPublishedDate(dto.getPublishedDate());
         book.setPageCount(dto.getPageCount());

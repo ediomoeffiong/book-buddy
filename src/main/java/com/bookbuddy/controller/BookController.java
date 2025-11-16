@@ -58,6 +58,16 @@ public class BookController {
         BookDTO book = bookService.saveBookFromExternalAPI(googleBooksId);
         return ResponseEntity.ok(book);
     }
+
+    @PostMapping("/import/top")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<BookDTO>> importTopFromExternalAPI(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "10") int maxResults) {
+
+        List<BookDTO> books = bookService.saveTopFromExternalAPI(query, maxResults);
+        return ResponseEntity.ok(books);
+    }
     
     @GetMapping("/category/{category}")
     public ResponseEntity<Page<BookDTO>> getBooksByCategory(

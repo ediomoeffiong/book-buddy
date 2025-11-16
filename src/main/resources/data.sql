@@ -13,3 +13,6 @@ VALUES (3, 'Pride and Prejudice', 'Jane Austen', '9780192833554', 'Romantic nove
 INSERT INTO book_categories (book_id, category) VALUES (1, 'Fantasy');
 INSERT INTO book_categories (book_id, category) VALUES (2, 'Dystopian');
 INSERT INTO book_categories (book_id, category) VALUES (3, 'Classic');
+
+-- Ensure the IDENTITY/sequence for `books.id` starts after seeded IDs
+ALTER TABLE books ALTER COLUMN id RESTART WITH 4;

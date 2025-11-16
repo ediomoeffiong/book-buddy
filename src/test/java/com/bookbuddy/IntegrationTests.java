@@ -24,6 +24,12 @@ public class IntegrationTests {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private com.bookbuddy.repository.UserRepository userRepository;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @Test
     void registerAndLogin_variations() throws Exception {
         // register
@@ -64,9 +70,27 @@ public class IntegrationTests {
         String resp = mvc.perform(get("/api/books/search/external?query=harry&maxResults=2"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn().getResponse().getContentAsString();
-        JsonNode node = objectMapper.readTree(resp);
-        // external API may return either an object with a `value` array or a JSON array directly
-        assertThat(node.isArray() || node.has("value")).isTrue();
+                JsonNode node = objectMapper.readTree(resp);
+                // external API may return either an object with a `value` array or a JSON array directly
+                JsonNode itemsNode;
+                if (node.isArray()) {
+                        itemsNode = node;
+                } else if (node.has("value")) {
+                        itemsNode = node.get("value");
+                } else {
+                        itemsNode = node;
+                }
+
+                assertThat(itemsNode.isArray()).isTrue();
+
+                // After adding a fallback cover image, every external result should include a non-empty coverImageUrl
+                for (JsonNode item : itemsNode) {
+                        if (item.isObject()) {
+                                JsonNode cover = item.get("coverImageUrl");
+                                assertThat(cover).isNotNull();
+                                assertThat(cover.asText()).isNotBlank();
+                        }
+                }
     }
 
     @Test
@@ -74,4 +98,43 @@ public class IntegrationTests {
         // without auth, expect 4xx (404 if missing or 403 if protected)
         mvc.perform(get("/api/books/1")).andExpect(status().is4xxClientError());
     }
+
+    @Test
+    void importTopEndpoint_requiresAdminAndSaves() throws Exception {
+        // create an admin user directly
+        userRepository.deleteAll();
+        com.bookbuddy.model.User admin = com.bookbuddy.model.User.builder()
+                .username("admintest")
+                .email("admin@example.com")
+                .password(passwordEncoder.encode("AdminPass123!"))
+                .role(com.bookbuddy.model.User.Role.ADMIN)
+                .build();
+        userRepository.save(admin);
+
+        // login to get token
+        String loginJson = "{\"usernameOrEmail\":\"admintest\",\"password\":\"AdminPass123!\"}";
+        String loginResp = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJson))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn().getResponse().getContentAsString();
+        JsonNode lnode = objectMapper.readTree(loginResp);
+        String token = lnode.get("token").asText();
+
+        // call import/top
+        String importResp = mvc.perform(post("/api/books/import/top?query=harry&maxResults=2")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn().getResponse().getContentAsString();
+
+        JsonNode arr = objectMapper.readTree(importResp);
+        assertThat(arr.isArray()).isTrue();
+        assertThat(arr.size()).isGreaterThan(0);
+        for (JsonNode item : arr) {
+            if (item.isObject()) {
+                JsonNode idNode = item.get("id");
+                assertThat(idNode).isNotNull();
+                assertThat(idNode.asLong()).isGreaterThan(0);
+            }
+        }
+    }
 }
+
