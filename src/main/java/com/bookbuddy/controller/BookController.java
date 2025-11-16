@@ -21,10 +21,19 @@ public class BookController {
     @GetMapping
     public ResponseEntity<Page<BookDTO>> getAllBooks(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "false") boolean external) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<BookDTO> books = bookService.getAllBooks(pageable);
-        return ResponseEntity.ok(books);
+        
+        if (external) {
+            // Fetch popular books from Google Books API
+            Page<BookDTO> books = bookService.getPopularBooksFromAPI(pageable);
+            return ResponseEntity.ok(books);
+        } else {
+            // Fetch books from local database (default behavior)
+            Page<BookDTO> books = bookService.getAllBooks(pageable);
+            return ResponseEntity.ok(books);
+        }
     }
     
     @GetMapping("/{id}")

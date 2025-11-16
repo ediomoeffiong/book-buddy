@@ -7,6 +7,7 @@ import com.bookbuddy.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,6 +123,57 @@ public class BookService {
     public Page<BookDTO> getAllBooks(Pageable pageable) {
         return bookRepository.findAll(pageable)
                 .map(this::convertToDTO);
+    }
+
+    /**
+     * Fetches popular books from Google Books API with support for pagination.
+     * Uses trending/popular book queries to populate results.
+     * 
+     * @param pageable pagination parameters
+     * @return page of popular books from Google Books API
+     */
+    public Page<BookDTO> getPopularBooksFromAPI(Pageable pageable) {
+        // List of popular search queries for books
+        List<String> popularQueries = List.of(
+            "bestseller",
+            "trending",
+            "fiction",
+            "science",
+            "mystery",
+            "romance",
+            "biography",
+            "technology",
+            "self-help",
+            "adventure"
+        );
+        
+        List<BookDTO> allResults = new ArrayList<>();
+        
+        // Fetch books from multiple popular queries to get diverse results
+        // Each query fetches up to 10 books to avoid rate limiting
+        for (String query : popularQueries) {
+            try {
+                List<BookDTO> results = googleBooksService.searchBooks(query, 10);
+                allResults.addAll(results);
+            } catch (Exception e) {
+                log.warn("Error fetching books for query '{}': {}", query, e.getMessage());
+                // Continue with other queries if one fails
+            }
+        }
+        
+        // Apply pagination to the aggregated results
+        int pageNumber = pageable.getPageNumber();
+        int pageSize = pageable.getPageSize();
+        int start = pageNumber * pageSize;
+        int end = Math.min(start + pageSize, allResults.size());
+        
+        // Handle edge cases
+        if (start >= allResults.size()) {
+            return new PageImpl<>(new ArrayList<>(), pageable, allResults.size());
+        }
+        
+        List<BookDTO> pageContent = allResults.subList(start, end);
+        return new PageImpl<>(pageContent, pageable, allResults.size());
     }
     
     private BookDTO convertToDTO(Book book) {

@@ -128,13 +128,21 @@ Authorization: Bearer {token}
 ## Book Endpoints (`/api/books`)
 
 ### 3. Get All Books (Paginated)
-**GET** `/api/books?page=0&size=20`
+**GET** `/api/books?page=0&size=20&external=false`
 
-**Description:** Get a paginated list of all books.
+**Description:** Get a paginated list of all books. Can fetch from local database or from Google Books API with popular/trending queries.
 
 **Query Parameters:**
 - `page` (optional, default=0): Page number (0-indexed)
 - `size` (optional, default=20): Number of books per page
+- `external` (optional, default=false): If `true`, fetches popular books from Google Books API (bestsellers, trending, fiction, science, mystery, romance, biography, technology, self-help, adventure). If `false`, fetches books from local database.
+
+**Examples:**
+```
+GET /api/books?page=0&size=20                    # Database (default)
+GET /api/books?page=0&size=20&external=false    # Database (explicit)
+GET /api/books?page=0&size=20&external=true     # Google Books API - Popular books
+```
 
 **Response (200 OK):**
 ```json
@@ -167,6 +175,44 @@ Authorization: Bearer {token}
   "last": false
 }
 ```
+
+**Response Example (external=true - Popular Books from Google Books):**
+```json
+{
+  "content": [
+    {
+      "id": -1,
+      "title": "An All-in-One Guide to Become a Bestseller",
+      "author": "Ukiyoto",
+      "isbn": null,
+      "description": "...",
+      "publisher": "CreateSpace",
+      "publishedDate": "2018",
+      "pageCount": 165,
+      "coverImageUrl": "http://books.google.com/books/content?id=...",
+      "categories": ["Self-Help"],
+      "language": "en",
+      "googleBooksId": "D4gj0QEACAAJ",
+      "averageRating": 0.0,
+      "ratingsCount": 0
+    }
+  ],
+  "pageable": {
+    "pageNumber": 0,
+    "pageSize": 20
+  },
+  "totalElements": 100,
+  "totalPages": 5,
+  "first": true,
+  "last": false
+}
+```
+
+**Notes:**
+- When `external=true`, the endpoint queries multiple popular book categories (bestseller, trending, fiction, science, mystery, romance, biography, technology, self-help, adventure) from Google Books API
+- External results are cached for 5 minutes to avoid rate limiting
+- Results are aggregated and paginated in-memory
+- External book IDs are negative values (temporary IDs) and cannot be imported until using `/api/books/import/{googleBooksId}`
 
 ---
 
