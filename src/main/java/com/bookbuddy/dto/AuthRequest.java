@@ -12,15 +12,10 @@ import lombok.NoArgsConstructor;
 public class AuthRequest {
 
     @NotBlank(message = "Email or username is required")
-    @JsonAlias({"email", "usernameOrEmail", "username"})
+    @JsonAlias({"email", "username"})
     private String usernameOrEmail;
 
     @NotBlank(message = "Password is required")
     private String password;
-
-    // Keep legacy getter for existing code that calls getEmail()
-    public String getEmail() {
-        return this.usernameOrEmail;
-    }
 }
 

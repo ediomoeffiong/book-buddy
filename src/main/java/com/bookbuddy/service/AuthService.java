@@ -95,15 +95,23 @@ public class AuthService {
             throw new MaintenanceModeException(maintenanceConfig.getMessage());
         }
 
-        // Authenticate user (email can be used as username)
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+        // Get the usernameOrEmail from the request
+        String usernameOrEmail = request.getUsernameOrEmail();
+
+        try {
+            // Authenticate user (supports both username and email)
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(usernameOrEmail, request.getPassword())
+            );
+        } catch (Exception e) {
+            log.error("Authentication failed for user: {}", usernameOrEmail);
+            throw new IllegalArgumentException("Invalid email/username or password");
+        }
 
         // Load user details (supports both username and email)
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        User user = userRepository.findByEmail(request.getEmail())
-                .or(() -> userRepository.findByUsername(request.getEmail()))
+        UserDetails userDetails = userDetailsService.loadUserByUsername(usernameOrEmail);
+        User user = userRepository.findByEmail(usernameOrEmail)
+                .or(() -> userRepository.findByUsername(usernameOrEmail))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Generate JWT token
