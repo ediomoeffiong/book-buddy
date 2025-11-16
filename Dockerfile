@@ -1,25 +1,24 @@
 # ----------- Build Stage -----------
-FROM eclipse-temurin:21-jdk AS build
+FROM maven:3.9-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
-# Install Maven
-RUN apt-get update && \
-    apt-get install -y maven && \
-    rm -rf /var/lib/apt/lists/*
-
-# Copy pom.xml and source code
+# Copy only pom.xml first to leverage caching
 COPY pom.xml .
-COPY src src
+RUN mvn dependency:go-offline
 
-# Build the app
+# Now copy source
+COPY src ./src
+
+# Build application
 RUN mvn clean package -DskipTests
 
+
 # ----------- Run Stage -----------
-FROM eclipse-temurin:21-jdk-alpine
+FROM eclipse-temurin:21-jre
+
 WORKDIR /app
 
-# Copy JAR
 COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
