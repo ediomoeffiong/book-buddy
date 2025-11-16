@@ -23,5 +23,8 @@ public class AuthResponse {
     private String email;
 
     private String firstName;
+    
+    @Builder.Default
+    private boolean success = true;
 }
 

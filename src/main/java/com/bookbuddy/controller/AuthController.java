@@ -23,8 +23,8 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
-        // Return 200 OK to accommodate frontends that treat non-200 as failure
-        return ResponseEntity.ok(response);
+        // Return 201 Created (semantic). AuthResponse now contains explicit `success` boolean.
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
