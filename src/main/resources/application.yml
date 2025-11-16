@@ -29,7 +29,9 @@ external:
   api:
     google-books:
       base-url: https://www.googleapis.com/books/v1
-      api-key: AIzaSyDOTe2GcFf6lKo_478RXrCzZnW-enb8xGk
+      # Do NOT commit real API keys. Provide at runtime via environment variable:
+      # Set environment variable GOOGLE_BOOKS_API_KEY in your deployment (Render, Docker, etc.)
+      api-key: ${GOOGLE_BOOKS_API_KEY:}
 
 logging:
   level:
