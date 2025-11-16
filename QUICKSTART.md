@@ -59,6 +59,19 @@ curl -X POST http://localhost:8080/api/auth/register \
 curl -X GET "http://localhost:8080/api/books/search/external?query=harry+potter&maxResults=5"
 ```
 
+**Note**: Results are cached for 5 minutes. Books in the response have temporary negative IDs until imported to your shelf.
+
+### 4.2b Import Multiple Books (Admin Only)
+
+If you have admin privileges, you can bulk-import external search results:
+
+```bash
+curl -X POST "http://localhost:8080/api/books/import/top?query=harry+potter&maxResults=3" \
+  -H "Authorization: Bearer YOUR_ADMIN_TOKEN_HERE"
+```
+
+This will search Google Books and automatically save the top N results to your database.
+
 ### 4.3 Add a Book to Your Shelf
 
 First, import a book (use a googleBooksId from the search results):
@@ -111,6 +124,11 @@ The app works without a Google Books API key, but with limited results. To get f
    ```
 3. Restart the application
 
+### External Search Results Caching
+- Search results are cached for 5 minutes to minimize API rate limits
+- Cache is stored in memory; restarting the app clears the cache
+- Each unique search query is cached independently
+
 ### JWT Token Expired
 Tokens expire after 24 hours. Simply login again to get a new token.
 
@@ -127,6 +145,17 @@ Tokens expire after 24 hours. Simply login again to get a new token.
 - Check the logs in the console for detailed error messages
 - Review the `application.yml` for configuration options
 - Ensure all prerequisites are installed correctly
+
+## Advanced Features
+
+### Caching
+External book search results are automatically cached for 5 minutes to reduce API calls. You'll notice faster repeat searches for the same query.
+
+### Admin Operations
+Some endpoints require ADMIN role:
+- `POST /api/books/import/top` - Bulk import external books
+
+Default admin user (if seeded): admin@example.com / AdminPass123!
 
 Happy Reading! 📚
 

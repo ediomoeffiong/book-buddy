@@ -78,6 +78,31 @@ curl -X POST http://localhost:8080/api/auth/login \
 
 **Note:** Save the token for subsequent requests! Use firstName for user greetings.
 
+### 1.3 Get Current User Information
+
+**Request:**
+```bash
+curl -X GET http://localhost:8080/api/auth/me \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "username": "john",
+  "email": "john@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "role": "USER",
+  "bio": null,
+  "profileImageUrl": null,
+  "createdAt": "2025-11-16T10:30:00"
+}
+```
+
+**Note:** This endpoint is useful for verifying the current user after login/registration and displaying user info in the frontend.
+
 ---
 
 ## 2. Book Operations

@@ -121,12 +121,37 @@ Response:
 }
 ```
 
+#### Get Current User
+```http
+GET /api/auth/me
+Authorization: Bearer {token}
+```
+
+Response:
+```json
+{
+  "id": 1,
+  "username": "johndoe",
+  "email": "john@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "role": "USER",
+  "bio": null,
+  "profileImageUrl": null,
+  "createdAt": "2025-11-16T10:30:00"
+}
+```
+
+Returns the currently authenticated user information. Requires valid JWT token in Authorization header.
+
 ### Book Endpoints
 
 #### Search Books (External API)
 ```http
 GET /api/books/search/external?query=harry+potter&maxResults=20
 ```
+
+**Note**: External search results are cached for 5 minutes to minimize API rate limit hits. Books from external API receive temporary unique negative IDs until saved to the database. Cover images are provided with fallback CDN URLs when unavailable.
 
 #### Search Books (Database)
 ```http
@@ -145,6 +170,21 @@ Authorization: Bearer {token}
 POST /api/books/import/{googleBooksId}
 Authorization: Bearer {token}
 ```
+
+#### Import Top N External Results (Admin Only)
+```http
+POST /api/books/import/top?query=harry+potter&maxResults=5
+Authorization: Bearer {token}
+```
+
+**Requirements**:
+- User must have ADMIN role
+- Query parameter `query` (book search term)
+- Query parameter `maxResults` (number of results to import, default 5)
+- Automatically saves top results from Google Books API to the database
+- Returns list of saved books with generated database IDs
+
+**Note**: This endpoint is designed for bulk importing books and requires admin privileges.
 
 ### Shelf Management Endpoints
 
@@ -305,6 +345,25 @@ mvn test
 ### JWT Configuration
 - Secret key: Set via `JWT_SECRET` environment variable
 - Token expiration: 24 hours (configurable in `application.yml`)
+
+### External API Configuration
+
+#### Google Books API
+- Optional API key for enhanced search capabilities
+- Set via environment variable: `GOOGLE_BOOKS_API_KEY`
+- Without key: Basic search with limited results
+- With key: Full search with complete book metadata
+
+**Search Results Caching**:
+- Cache: Caffeine with 5-minute TTL, max 1000 entries
+- Cache key: `{query}|{maxResults}`
+- Metrics tracked: `cache.hit`, `cache.miss` (via Micrometer)
+
+**External Book Handling**:
+- External books (no database ID) receive temporary unique negative IDs
+- These IDs are used for display purposes only until books are saved
+- Long descriptions (>2000 chars) are truncated to fit database constraints
+- Missing cover images use fallback CDN URL
 
 ### Database Configuration
 - Development: H2 in-memory database

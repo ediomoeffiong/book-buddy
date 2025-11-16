@@ -94,6 +94,37 @@ http://localhost:8080
 
 ---
 
+### 3. Get Current User
+**GET** `/api/auth/me`
+
+**Description:** Get the currently authenticated user's information.
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "username": "john",
+  "email": "john@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "role": "USER",
+  "bio": null,
+  "profileImageUrl": null,
+  "createdAt": "2025-11-16T10:30:00"
+}
+```
+
+**Possible Errors:**
+- `401 Unauthorized`: Missing or invalid JWT token
+- `404 Not Found`: User not found
+
+---
+
 ## Book Endpoints (`/api/books`)
 
 ### 3. Get All Books (Paginated)

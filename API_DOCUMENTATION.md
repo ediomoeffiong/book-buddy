@@ -80,6 +80,33 @@ Login an existing user.
 
 ---
 
+### GET `/api/auth/me`
+Retrieve the currently authenticated user's information.
+
+**Headers:**
+- `Authorization` (String, required): Bearer token
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "username": "john.doe",
+  "email": "john.doe@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "role": "USER",
+  "bio": null,
+  "profileImageUrl": null,
+  "createdAt": "2025-11-16T10:30:00"
+}
+```
+
+**Errors:**
+- `401`: Unauthorized (missing or invalid JWT token)
+- `404`: User not found
+
+---
+
 ## Book Management (`/api/books`)
 
 Handles book discovery, search, and import from external APIs. Books can be searched from the local database or fetched from Google Books API.

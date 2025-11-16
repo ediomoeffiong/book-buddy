@@ -4,8 +4,10 @@ import com.bookbuddy.config.MaintenanceConfig;
 import com.bookbuddy.dto.AuthRequest;
 import com.bookbuddy.dto.AuthResponse;
 import com.bookbuddy.dto.RegisterRequest;
+import com.bookbuddy.dto.UserDTO;
 import com.bookbuddy.exception.DuplicateResourceException;
 import com.bookbuddy.exception.MaintenanceModeException;
+import com.bookbuddy.exception.ResourceNotFoundException;
 import com.bookbuddy.model.User;
 import com.bookbuddy.repository.UserRepository;
 import com.bookbuddy.security.JwtUtil;
@@ -123,6 +125,20 @@ public class AuthService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
+                .build();
+    }
+
+    public UserDTO getCurrentUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        return UserDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(user.getRole().name())
                 .build();
     }
 }

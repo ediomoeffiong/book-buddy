@@ -20,6 +20,7 @@ public class UserDTO {
     private String lastName;
     private String bio;
     private String profileImageUrl;
+    private String role;
     private LocalDateTime createdAt;
 }
 
