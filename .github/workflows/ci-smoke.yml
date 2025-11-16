@@ -1,0 +1,62 @@
+name: CI - Docker Compose smoke test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    services: {}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build project
+        run: mvn -DskipTests=true -B package
+
+      - name: Start Postgres and pgAdmin via docker-compose
+        run: |
+          docker-compose up -d
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            docker exec $(docker ps -q -f ancestor=postgres:15) pg_isready -U bookbuddy && break || sleep 2
+          done
+
+      - name: Run app jar
+        env:
+          DATABASE_URL: jdbc:postgresql://localhost:5432/bookbuddy
+          DATABASE_USERNAME: bookbuddy
+          DATABASE_PASSWORD: bookbuddypass
+          SPRING_PROFILES_ACTIVE: prod
+          JWT_SECRET: testsecretthatisverylongandsecure
+        run: |
+          nohup java -jar target/book-buddy-1.0.0.jar > app.log 2>&1 &
+          echo $! > app.pid
+
+      - name: Wait for /health
+        run: |
+          for i in {1..30}; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health || true)
+            if [ "$status" = "200" ]; then
+              echo "Health OK"; curl -s http://localhost:8080/health; exit 0
+            fi
+            sleep 2
+          done
+          echo "Health check failed"; cat app.log; exit 1
+
+      - name: Tear down
+        if: always()
+        run: |
+          pkill -f 'book-buddy-1.0.0.jar' || true
+          docker-compose down -v

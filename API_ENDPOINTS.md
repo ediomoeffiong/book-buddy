@@ -799,6 +799,26 @@ false
 
 ---
 
+## Health & Monitoring
+
+### Health Check
+**GET** `/health`
+
+**Description:** Lightweight health check verifying DB connectivity. Returns `200 OK` and JSON `{ "status": "UP", "database": "UP" }` when successful. Returns `503 Service Unavailable` with an `error` field when the database check fails.
+
+**Possible Errors:**
+- `503 Service Unavailable`: Database connectivity issue
+
+### Actuator (optional, production)
+If Actuator and Prometheus registry are enabled in production (`application-prod.yml`), the following endpoints will be available:
+
+- `GET /actuator/health` — Actuator health endpoint
+- `GET /actuator/metrics` — Micrometer metrics
+- `GET /actuator/prometheus` — Prometheus scrape endpoint
+
+Ensure these endpoints are secured/filtered by your deployment (do not expose sensitive details publicly).
+
+
 ## Authentication Header Format
 
 For all endpoints that require authentication, use:

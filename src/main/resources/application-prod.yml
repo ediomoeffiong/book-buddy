@@ -1,10 +1,11 @@
 spring:
   datasource:
-    # Use DATABASE_URL from Render. No fallback to localhost in production.
-    url: ${DATABASE_URL}
+    # Use DATABASE_URL from environment in production. Example:
+    # jdbc:postgresql://db-host:5432/bookbuddy
+    url: ${DATABASE_URL:jdbc:postgresql://db:5432/bookbuddy}
     driver-class-name: org.postgresql.Driver
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+    username: ${DATABASE_USERNAME:bookbuddy}
+    password: ${DATABASE_PASSWORD:bookbuddypass}
 
   jpa:
     hibernate:
@@ -14,6 +15,19 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 
   h2:
     console:

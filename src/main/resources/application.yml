@@ -21,6 +21,15 @@ spring:
       enabled: true
       path: /h2-console
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
 jwt:
   secret: MyVerySecureJwtSecretKeyThatIsAtLeast32BytesLongForHS256Algorithm
   expiration: 86400000

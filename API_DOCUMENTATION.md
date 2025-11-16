@@ -107,6 +107,19 @@ Retrieve the currently authenticated user's information.
 
 ---
 
+## Health & Monitoring
+
+- `GET /health` : Lightweight health check that verifies database connectivity. Returns `200 OK` with JSON `{ "status": "UP", "database": "UP" }` when DB responds to `SELECT 1`. If the DB check fails the endpoint returns `503 Service Unavailable` with an `error` field describing the issue.
+
+- Actuator endpoints (when enabled in production via `application-prod.yml`):
+  - `GET /actuator/health` : Actuator health endpoint (may return detailed info depending on `management.endpoint.health.show-details`).
+  - `GET /actuator/metrics` : Micrometer metrics endpoint.
+  - `GET /actuator/prometheus` : Prometheus scrape endpoint (requires `micrometer-registry-prometheus` and exposure of `prometheus`).
+
+Notes:
+- The repository includes `docker-compose.yml` and `.env.example` for local Postgres testing. In production set `SPRING_PROFILES_ACTIVE=prod` and provide `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD` and `JWT_SECRET`.
+
+
 ## Book Management (`/api/books`)
 
 Handles book discovery, search, and import from external APIs. Books can be searched from the local database or fetched from Google Books API.

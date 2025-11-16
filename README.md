@@ -411,6 +411,16 @@ docker-compose up -d
 
  - The application includes a simple `/health` endpoint that performs a lightweight DB check. In production, prefer enabling Spring Boot Actuator and more advanced health checks.
 
+## Monitoring and CI
+
+- The project includes Prometheus support (`micrometer-registry-prometheus`) and example Prometheus scrape configuration in `docs/monitoring.md`.
+- A minimal Grafana query example is in `docs/monitoring.md` as well.
+- CI workflows:
+  - `.github/workflows/ci-smoke.yml` — lightweight smoke tests that start docker-compose, build and run the JAR and check `/health`.
+  - `.github/workflows/ci-matrix.yml` — runs builds across multiple JDKs (17 and 21) and an integration job that runs tests with Postgres via `docker-compose`.
+
+Security note: Protect actuator endpoints and metrics behind network controls or authentication. The repository config restricts `/actuator/**` to `ADMIN` role in `SecurityConfig` and leaves `/health` public for lightweight checks.
+
 ## Project Structure
 
 ```

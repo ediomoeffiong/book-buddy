@@ -39,21 +39,23 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/",
-                                "/",
-                                "/favicon.ico",
-                                "/static/**",
-                                "/api/auth/**",
-                                "/h2-console/**",
-                                "/api/books",
-                                "/api/books/",
-                                "/api/books/search",
-                                "/api/books/search/external",
-                                "/register",
-                                "/login",
-                                "/error").permitAll()
-                        .anyRequest().authenticated()
+                    // Actuator endpoints: restrict to ADMIN role, but allow lightweight /health publicly
+                    .requestMatchers("/actuator/**").hasRole("ADMIN")
+                    .requestMatchers(
+                        "/",
+                        "/favicon.ico",
+                        "/static/**",
+                        "/api/auth/**",
+                        "/h2-console/**",
+                        "/api/books",
+                        "/api/books/",
+                        "/api/books/search",
+                        "/api/books/search/external",
+                        "/register",
+                        "/login",
+                        "/health",
+                        "/error").permitAll()
+                    .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
