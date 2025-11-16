@@ -390,6 +390,27 @@ export SPRING_PROFILES_ACTIVE=prod
 mvn spring-boot:run
 ```
 
+## Deployment and Production Notes
+
+ - The application requires a persistent relational database in production (Postgres recommended). By default the project uses an in-memory H2 database for development (`application.yml`). Do NOT use H2 in-memory for production — data will be lost on restart or across instances.
+
+ - Required environment variables for production:
+   - `DATABASE_URL` — JDBC URL for Postgres (example: `jdbc:postgresql://host:5432/bookbuddy`)
+   - `DATABASE_USERNAME`
+   - `DATABASE_PASSWORD`
+   - `JWT_SECRET` — a secure random secret (at least 32 chars) or a Base64-encoded key
+   - `GOOGLE_BOOKS_API_KEY` — optional; set to use external Google Books API
+   - `SPRING_PROFILES_ACTIVE=prod` to enable production profile and validations
+
+ - A sample `.env.example` and `docker-compose.yml` are included in the repository for local testing with Postgres and pgAdmin. To spin up a local Postgres for testing:
+
+```powershell
+docker-compose up -d
+# then set env vars (or use .env) and run the app
+```
+
+ - The application includes a simple `/health` endpoint that performs a lightweight DB check. In production, prefer enabling Spring Boot Actuator and more advanced health checks.
+
 ## Project Structure
 
 ```
