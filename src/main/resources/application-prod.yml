@@ -16,11 +16,15 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  h2:
+    console:
+      enabled: false
+
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus,env
   endpoint:
     health:
       show-details: when_authorized
@@ -28,10 +32,6 @@ management:
     export:
       prometheus:
         enabled: true
-
-  h2:
-    console:
-      enabled: false
 
 logging:
   level:

@@ -39,7 +39,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                    // Actuator endpoints: restrict to ADMIN role, but allow lightweight /health publicly
+                    // Actuator endpoints: restrict to ADMIN role, but allow /actuator/health publicly for monitoring
+                    .requestMatchers("/actuator/health").permitAll()
                     .requestMatchers("/actuator/**").hasRole("ADMIN")
                     .requestMatchers(
                         "/",
