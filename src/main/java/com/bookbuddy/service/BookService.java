@@ -129,6 +129,9 @@ public class BookService {
      * Fetches popular books from Google Books API with support for pagination.
      * Uses trending/popular book queries to populate results.
      * 
+     * Implements smart pagination: only fetches queries needed for the requested page
+     * to minimize API calls and response time.
+     * 
      * @param pageable pagination parameters
      * @return page of popular books from Google Books API
      */
@@ -147,14 +150,22 @@ public class BookService {
             "adventure"
         );
         
+        int pageNumber = pageable.getPageNumber();
+        int pageSize = pageable.getPageSize();
+        int booksPerQuery = 10; // Each query returns ~10 books
+        int queriesNeeded = Math.min((pageNumber + 1) * pageSize / booksPerQuery + 1, popularQueries.size());
+        
         List<BookDTO> allResults = new ArrayList<>();
         
-        // Fetch books from multiple popular queries to get diverse results
-        // Each query fetches up to 10 books to avoid rate limiting
-        for (String query : popularQueries) {
+        // Only fetch queries needed for requested page (smart pagination)
+        // This drastically reduces API call time for large page sizes
+        for (int i = 0; i < queriesNeeded && i < popularQueries.size(); i++) {
+            String query = popularQueries.get(i);
             try {
-                List<BookDTO> results = googleBooksService.searchBooks(query, 10);
-                allResults.addAll(results);
+                List<BookDTO> results = googleBooksService.searchBooks(query, booksPerQuery);
+                if (results != null) {
+                    allResults.addAll(results);
+                }
             } catch (Exception e) {
                 log.warn("Error fetching books for query '{}': {}", query, e.getMessage());
                 // Continue with other queries if one fails
@@ -162,8 +173,6 @@ public class BookService {
         }
         
         // Apply pagination to the aggregated results
-        int pageNumber = pageable.getPageNumber();
-        int pageSize = pageable.getPageSize();
         int start = pageNumber * pageSize;
         int end = Math.min(start + pageSize, allResults.size());
         
@@ -173,7 +182,11 @@ public class BookService {
         }
         
         List<BookDTO> pageContent = allResults.subList(start, end);
-        return new PageImpl<>(pageContent, pageable, allResults.size());
+        
+        // Total count is capped at 100 (10 queries × 10 books per query)
+        long totalElements = Math.min(popularQueries.size() * booksPerQuery, allResults.size());
+        
+        return new PageImpl<>(pageContent, pageable, totalElements);
     }
     
     private BookDTO convertToDTO(Book book) {

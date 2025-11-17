@@ -1,11 +1,30 @@
 spring:
   datasource:
-    # Use DATABASE_URL from environment in production. Example:
-    # jdbc:postgresql://db-host:5432/bookbuddy
-    url: ${DATABASE_URL:jdbc:postgresql://db:5432/bookbuddy}
+    # PostgreSQL connection with environment variables
+    # Example: jdbc:postgresql://host:5432/database?sslmode=require
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/bookbuddy?sslmode=require&tcpKeepAlives=true}
     driver-class-name: org.postgresql.Driver
     username: ${DATABASE_USERNAME:bookbuddy}
-    password: ${DATABASE_PASSWORD:bookbuddypass}
+    password: ${DATABASE_PASSWORD:password}
+    
+    # HikariCP connection pooling configuration
+    hikari:
+      # Maximum number of connections in the pool
+      maximum-pool-size: 20
+      # Minimum number of idle connections to maintain
+      minimum-idle: 5
+      # Maximum time to wait for a connection from the pool (ms)
+      connection-timeout: 30000
+      # Maximum time a connection can sit idle before being closed (ms)
+      idle-timeout: 600000
+      # Maximum lifetime of a connection (ms) - PostgreSQL Cloud uses 15 min limit
+      max-lifetime: 900000
+      # Connection test query for PostgreSQL
+      connection-test-query: SELECT 1
+      # Pool name for monitoring
+      pool-name: BookBuddyPool
+      # Allow connection initialization SQL
+      initialization-fail-timeout: 1
 
   jpa:
     hibernate:
@@ -15,6 +34,11 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        # Connection pooling settings
+        hikari:
+          auto-commit: true
+    # Lazy load warning
+    open-in-view: false
 
   h2:
     console:
